@@ -10,7 +10,10 @@ from tensorboardX import SummaryWriter
 import shutil
 import numpy as np
 from tqdm.autonotebook import tqdm
+import os
+os.environ["PYTORCH_CUDA_ALLOC_CONF"] = 'max_split_size_mb:4000'
 
+device = device = torch.device("cpu")
 
 def get_args():
     parser = argparse.ArgumentParser(
@@ -29,6 +32,7 @@ def get_args():
     parser.add_argument("--data_path", type=str, default="data/COCO", help="the root folder of dataset")
     parser.add_argument("--log_path", type=str, default="tensorboard/signatrix_efficientdet_coco")
     parser.add_argument("--saved_path", type=str, default="trained_models")
+    parser.add_argument("--num_workers", type=int, default=4, help="num workers for CUDA")
 
     args = parser.parse_args()
     return args
@@ -46,13 +50,13 @@ def train(opt):
                        "shuffle": True,
                        "drop_last": True,
                        "collate_fn": collater,
-                       "num_workers": 12}
+                       "num_workers": opt.num_workers}
 
     test_params = {"batch_size": opt.batch_size,
                    "shuffle": False,
                    "drop_last": False,
                    "collate_fn": collater,
-                   "num_workers": 12}
+                   "num_workers": opt.num_workers}
 
     training_set = CocoDataset(root_dir=opt.data_path, set="train2017",
                                transform=transforms.Compose([Normalizer(), Augmenter(), Resizer()]))
@@ -82,6 +86,7 @@ def train(opt):
 
     best_loss = 1e5
     best_epoch = 0
+    model.to('cuda') 
     model.train()
 
     num_iter_per_epoch = len(training_generator)

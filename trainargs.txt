@@ -1,0 +1,3 @@
+py train.py --image_size 640 --num_epochs 100 --data_path roofy_seg --batch_size 4 --test_interval 20 --num_workers 2
+
+py train.py -p roofy --num_epochs 100 --data_path roofy3 --batch_size 4 --val_interval 20 --num_workers 2
